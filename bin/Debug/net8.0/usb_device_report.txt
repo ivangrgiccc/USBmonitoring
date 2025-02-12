@@ -1,0 +1,164 @@
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device disconnected at 09.02.2025. 14:31:41
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device connected at 09.02.2025. 14:31:46
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device disconnected at 09.02.2025. 14:31:49
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device connected at 09.02.2025. 14:31:50
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device disconnected at 09.02.2025. 14:31:51
+USB device connected at 09.02.2025. 14:31:52
+USB device connected at 09.02.2025. 14:31:52
+USB device connected at 09.02.2025. 14:31:52
+USB device connected at 09.02.2025. 14:31:52
+USB device connected at 09.02.2025. 14:31:52
+USB device connected at 09.02.2025. 14:31:53
+USB device connected at 09.02.2025. 14:31:53
+USB device connected at 09.02.2025. 14:32:55
+USB device connected at 09.02.2025. 14:32:56
+USB device connected at 09.02.2025. 14:32:56
+USB device connected at 09.02.2025. 14:32:56
+USB device connected at 09.02.2025. 14:32:56
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device disconnected at 09.02.2025. 14:33:01
+USB device connected at 09.02.2025. 14:33:07
+USB device connected at 09.02.2025. 14:33:07
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device connected at 09.02.2025. 14:33:19
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device disconnected at 09.02.2025. 14:35:02
+USB device connected at 09.02.2025. 14:35:05
+USB device connected at 09.02.2025. 14:35:05
+USB device connected at 09.02.2025. 14:35:05
+USB device connected at 09.02.2025. 14:35:06
+USB device connected at 09.02.2025. 14:35:06
+USB device connected at 09.02.2025. 14:35:06
+USB device connected at 09.02.2025. 14:35:06
+USB device connected at 09.02.2025. 14:35:06
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device disconnected at 09.02.2025. 14:35:08
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:10
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device connected at 09.02.2025. 14:35:44
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device System.Func`1[System.String] disconnected at 09.02.2025. 14:39:12
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device connected at 09.02.2025. 14:39:18
+USB device disconnected at 09.02.2025. 14:44:50 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:44:50 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:44:50 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:44:50 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:44:50 (Drive not identified)
+USB device connected at 09.02.2025. 14:44:55 (Drive not identified)
+USB device connected at 09.02.2025. 14:44:55 (Drive not identified)
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:44:56 - Drive: E:\
+USB device connected at 09.02.2025. 14:46:32 - Drive: E:\
+USB device connected at 09.02.2025. 14:46:32 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:46 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:46 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device connected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device connected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device connected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:46:47 - Drive: E:\
+USB device connected at 09.02.2025. 14:50:22 - Drive: E:\
+USB device connected at 09.02.2025. 14:50:22 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:54:15 (Drive not identified)
+USB device connected at 09.02.2025. 14:54:19 - Drive: E:\
+USB device disconnected at 09.02.2025. 14:54:54 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:55:25 (Drive not identified)
+USB device disconnected at 09.02.2025. 14:55:32 (Drive not identified)
+USB device disconnected at 09.02.2025. 15:00:37 - Drive: Unknown
+USB device disconnected at 09.02.2025. 15:03:30 - Drive: Unknown
+USB device connected at 09.02.2025. 15:03:35 - Drive: E:\
+USB uređaj već spojen u 12.02.2025. 23:07:43 - ID uređaja: USBSTOR\DISK&VEN_PHILIPS&PROD_USB_FLASH_DRIVE&REV_8.07\1908102150M40128&0 - USB: E:\
+USB uređaj već spojen u 12.02.2025. 23:11:07 - ID uređaja: USBSTOR\DISK&VEN_PHILIPS&PROD_USB_FLASH_DRIVE&REV_8.07\1908102150M40128&0 - USB: E:\
