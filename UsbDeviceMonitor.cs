@@ -3,6 +3,7 @@ using System.Management;
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UsbDeviceMonitor
 {
@@ -11,89 +12,83 @@ namespace UsbDeviceMonitor
         public event Action<string> UsbDeviceConnected;
         public event Action<string> UsbDeviceDisconnected;
 
-        // Spremi log datoteku u direktorij projekta
         private readonly string reportFilePath = Path.Combine(
-            Directory.GetCurrentDirectory(), // Trenutni radni direktorij (obično bin\Debug\netX.X)
+            Directory.GetCurrentDirectory(),
             "usb_device_report.txt");
-        private bool isDeviceConnected = false;  // Zastavica za praćenje stanja uređaja
-        private FileSystemWatcher usbWatcher;  // FileSystemWatcher za praćenje promjena na USB uređaju
-        private FileSystemWatcher pcWatcher;   // FileSystemWatcher za praćenje promjena na racunalu
-        private DateTime lastUsbFileChangeTime = DateTime.MinValue; // Vrijeme zadnje promjene na USB-u
-        private string lastUsbFileName; // Ime zadnje datoteke promijenjene na USB-u
+
+        private List<FileSystemWatcher> usbWatchers = new List<FileSystemWatcher>(); // Lista za praćenje više USB uređaja
+        private FileSystemWatcher? pcWatcher;
+        private DateTime lastUsbFileChangeTime = DateTime.MinValue;
+        private string lastUsbFileName;
 
         private Timer eventTimer;  // Timer za grupiranje događaja
         private List<string> pendingEvents = new List<string>();  // Lista događaja koji čekaju na obradu
 
+        private Dictionary<string, DateTime> lastEventTimes = new Dictionary<string, DateTime>(); // Pohranjuje vrijeme zadnjeg događaja za svaku datoteku
+        private readonly TimeSpan eventCooldown = TimeSpan.FromMilliseconds(500); // 500 ms cooldown za duple događaje
+
         public void StartMonitoring()
         {
-            // Provjera trenutno povezanih uređaja prilikom pokretanja aplikacije
             CheckCurrentUsbDevices();
 
-            // Praćenje kada je uređaj spojen (EventType = 2)
             ManagementEventWatcher insertWatcher = new ManagementEventWatcher(
                 new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2"));
             insertWatcher.EventArrived += (sender, e) =>
             {
-                Thread.Sleep(1000); // Kratka odgoda za stabilnost
-
-                if (!isDeviceConnected) // Provjeri je li uređaj već prijavljen
-                {
-                    string deviceId = GetUsbDeviceId();
-                    string driveLetter = GetUsbDriveLetter();
-                    string message = $"USB uređaj spojen u {DateTime.Now} - ID uređaja: {deviceId}";
-
-                    if (!string.IsNullOrEmpty(driveLetter))
-                    {
-                        message += $" - Usb: {driveLetter}";
-                        PrintUsbDriveTree(driveLetter); // Ispis strukture direktorija
-                        StartFileSystemWatcher(driveLetter); // Pokreni FileSystemWatcher za USB
-                        StartPcFileSystemWatcher(@"C:\Users\Korisnik\Desktop"); // Pokreni FileSystemWatcher za racunalo
-                    }
-                    else
-                    {
-                        message += " - Slovo usb particije nije pronađeno";
-                    }
-
-                    UsbDeviceConnected?.Invoke(message);
-                    GenerateReport(message); // Dodaj zapis u log datoteku
-                    isDeviceConnected = true; // Postavi zastavicu da je uređaj spojen
-                }
+                Thread.Sleep(1000); // Čekaj 1 sekundu da se uređaj stabilizira
+                CheckCurrentUsbDevices(); // Provjeri sve USB uređaje nakon povezivanja
             };
             insertWatcher.Start();
 
-            // Praćenje kada je uređaj odspojen (EventType = 3)
             ManagementEventWatcher removeWatcher = new ManagementEventWatcher(
                 new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3"));
             removeWatcher.EventArrived += (sender, e) =>
             {
-                // Dodavanje kratkog odgode prije nego što obradimo odspajanje
-                Thread.Sleep(1000); // Ovdje čekamo 1 sekundu
-
-                if (isDeviceConnected)
-                {
-                    string deviceId = GetUsbDeviceId();
-                    string message = $"USB uređaj odspojen u {DateTime.Now} - ID uređaja: {deviceId}";
-
-                    UsbDeviceDisconnected?.Invoke(message);
-                    GenerateReport(message); // Dodaj zapis u log datoteku
-                    isDeviceConnected = false; // Postavljamo zastavicu na false jer je uređaj sada odspojen
-
-                    StopFileSystemWatcher(); // Zaustavi FileSystemWatcher za USB
-                    StopPcFileSystemWatcher(); // Zaustavi FileSystemWatcher za racunalo
-                }
+                Thread.Sleep(1000); // Čekaj 1 sekundu da se uređaj stabilizira
+                CheckCurrentUsbDevices(); // Provjeri sve USB uređaje nakon odspajanja
             };
             removeWatcher.Start();
         }
 
-        // Pokreni FileSystemWatcher za praćenje promjena na USB uređaju
-        private void StartFileSystemWatcher(string driveLetter)
+        private void CheckCurrentUsbDevices()
         {
-            if (usbWatcher != null)
+            var currentDriveLetters = GetUsbDriveLetters();
+
+            if (currentDriveLetters.Count > 0)
             {
-                usbWatcher.Dispose(); // Oslobodi postojeći FileSystemWatcher
+                foreach (var driveLetter in currentDriveLetters)
+                {
+                    if (!usbWatchers.Any(w => w.Path == driveLetter)) // Ako uređaj već nije u praćenju
+                    {
+                        string message = $"USB uređaj spojen u {DateTime.Now} - USB: {driveLetter}";
+                        UsbDeviceConnected?.Invoke(message);
+                        GenerateReport(message);
+                        StartFileSystemWatcher(driveLetter);
+                        PrintUsbDriveTree(driveLetter); // Dodano za ispis strukture direktorija
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Trenutno nema spojenih USB uređaja.");
             }
 
-            usbWatcher = new FileSystemWatcher
+            // Zaustavi praćenje za uređaje koji više nisu spojeni
+            foreach (var watcher in usbWatchers.ToList())
+            {
+                if (!currentDriveLetters.Contains(watcher.Path))
+                {
+                    StopFileSystemWatcher(watcher.Path);
+                    string message = $"USB uređaj odspojen u {DateTime.Now} - USB: {watcher.Path}";
+                    UsbDeviceDisconnected?.Invoke(message);
+                    GenerateReport(message);
+                }
+            }
+        }
+
+        private void StartFileSystemWatcher(string driveLetter)
+        {
+            var watcher = new FileSystemWatcher
             {
                 Path = driveLetter,
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
@@ -102,20 +97,46 @@ namespace UsbDeviceMonitor
                 EnableRaisingEvents = true
             };
 
-            // Dodaj event handlere za praćenje promjena na USB-u
-            usbWatcher.Created += OnUsbFileCreated;
-            usbWatcher.Changed += OnUsbFileChanged;
-            usbWatcher.Renamed += OnUsbFileRenamed;
+            watcher.Created += OnUsbFileCreated;
+            watcher.Changed += OnUsbFileChanged;
+            watcher.Renamed += OnUsbFileRenamed;
+            watcher.Deleted += OnUsbFileDeleted;
 
-            Console.WriteLine($"Započeto praćenje promjena na USB uredaju: {driveLetter}");
+            usbWatchers.Add(watcher); // Dodaj watcher u listu
+            Console.WriteLine($"Započeto praćenje promjena na USB uređaju: {driveLetter}");
         }
 
-        // Pokreni FileSystemWatcher za praćenje promjena na računalu
+        private void StopFileSystemWatcher(string driveLetter)
+        {
+            var watcher = usbWatchers.FirstOrDefault(w => w.Path == driveLetter);
+            if (watcher != null)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+                usbWatchers.Remove(watcher); // Ukloni watcher iz liste
+                Console.WriteLine($"Zaustavljeno praćenje promjena na USB uređaju: {driveLetter}");
+            }
+        }
+
+        private List<string> GetUsbDriveLetters()
+        {
+            var driveLetters = new List<string>();
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            foreach (var drive in drives)
+            {
+                if (drive.DriveType == DriveType.Removable && drive.IsReady)
+                {
+                    driveLetters.Add(drive.Name);
+                }
+            }
+            return driveLetters;
+        }
+
         private void StartPcFileSystemWatcher(string pcDirectoryPath)
         {
             if (pcWatcher != null)
             {
-                pcWatcher.Dispose(); // Oslobodi postojeći FileSystemWatcher
+                pcWatcher.Dispose();
             }
 
             pcWatcher = new FileSystemWatcher
@@ -127,25 +148,11 @@ namespace UsbDeviceMonitor
                 EnableRaisingEvents = true
             };
 
-            // Dodaj event handlere za praćenje promjena na racunalu
             pcWatcher.Created += OnPcFileCreated;
 
             Console.WriteLine($"Započeto praćenje promjena na direktoriju računala: {pcDirectoryPath}");
         }
 
-        // Zaustavi FileSystemWatcher za USB
-        private void StopFileSystemWatcher()
-        {
-            if (usbWatcher != null)
-            {
-                usbWatcher.EnableRaisingEvents = false;
-                usbWatcher.Dispose();
-                usbWatcher = null;
-                Console.WriteLine("Zaustavljeno praćenje promjena na USB uredaju.");
-            }
-        }
-
-        // Zaustavi FileSystemWatcher za racunalu
         private void StopPcFileSystemWatcher()
         {
             if (pcWatcher != null)
@@ -157,38 +164,63 @@ namespace UsbDeviceMonitor
             }
         }
 
-        // Event handleri za USB promjene
         private void OnUsbFileCreated(object sender, FileSystemEventArgs e)
         {
-            pendingEvents.Add($"Datoteka kreirana na USB-u: {e.FullPath}");
-            StartEventTimer();
+            if (ShouldProcessEvent(e.FullPath))
+            {
+                string message = $"{DateTime.Now}: Datoteka kreirana na USB-u: {e.FullPath}";
+                pendingEvents.Add(message);
+                GenerateReport(message); // Dodano za zapisivanje u log fajl
+                StartEventTimer();
+            }
         }
 
         private void OnUsbFileChanged(object sender, FileSystemEventArgs e)
         {
-            lastUsbFileChangeTime = DateTime.Now;
-            lastUsbFileName = Path.GetFileName(e.FullPath);
-            pendingEvents.Add($"Datoteka promijenjena na USB-u: {e.FullPath}");
-            StartEventTimer();
+            if (ShouldProcessEvent(e.FullPath))
+            {
+                lastUsbFileChangeTime = DateTime.Now;
+                lastUsbFileName = Path.GetFileName(e.FullPath);
+                string message = $"{DateTime.Now}: Datoteka promijenjena na USB-u: {e.FullPath}";
+                pendingEvents.Add(message);
+                GenerateReport(message); // Dodano za zapisivanje u log fajl
+                StartEventTimer();
+            }
         }
 
         private void OnUsbFileRenamed(object sender, RenamedEventArgs e)
         {
-            pendingEvents.Add($"Datoteka preimenovana na USB-u: {e.OldFullPath} -> {e.FullPath}");
-            StartEventTimer();
+            if (ShouldProcessEvent(e.FullPath))
+            {
+                string message = $"{DateTime.Now}: Datoteka preimenovana na USB-u: {e.OldFullPath} -> {e.FullPath}";
+                pendingEvents.Add(message);
+                GenerateReport(message); // Dodano za zapisivanje u log fajl
+                StartEventTimer();
+            }
         }
 
-        // Event handler za kreiranje datoteka na računalu
+        private void OnUsbFileDeleted(object sender, FileSystemEventArgs e)
+        {
+            if (ShouldProcessEvent(e.FullPath))
+            {
+                string message = $"{DateTime.Now}: Datoteka obrisana s USB-a: {e.FullPath}";
+                pendingEvents.Add(message);
+                GenerateReport(message); // Dodano za zapisivanje u log fajl
+                StartEventTimer();
+            }
+        }
+
         private void OnPcFileCreated(object sender, FileSystemEventArgs e)
         {
             if ((DateTime.Now - lastUsbFileChangeTime).TotalSeconds < 1 &&
                 Path.GetFileName(e.FullPath) == lastUsbFileName)
             {
-                Console.WriteLine($"Datoteka kopirana s USB-a na racunalo: {e.FullPath}");
+                string message = $"{DateTime.Now}: Datoteka kopirana s USB-a na računalo: {e.FullPath}";
+                Console.WriteLine(message);
+                GenerateReport(message); // Dodano za zapisivanje u log fajl
             }
         }
 
-        // Pokreni Timer za grupiranje događaja
         private void StartEventTimer()
         {
             if (eventTimer == null)
@@ -197,8 +229,7 @@ namespace UsbDeviceMonitor
             }
         }
 
-        // Callback za Timer
-        private void EventTimerCallback(object state)
+        public void EventTimerCallback(object state)
         {
             if (pendingEvents.Count > 0)
             {
@@ -206,117 +237,80 @@ namespace UsbDeviceMonitor
                 pendingEvents.Clear();
             }
 
+            CleanupOldEvents(); // Očisti stare zapise
+
             eventTimer?.Dispose();
             eventTimer = null;
         }
 
-        // Provjera svih trenutno povezanih USB uređaja
-        private void CheckCurrentUsbDevices()
+        public bool ShouldProcessEvent(string filePath)
         {
-            var currentDeviceIds = GetAllConnectedUsbDeviceIds();
-            if (currentDeviceIds.Count > 0)
+            if (lastEventTimes.TryGetValue(filePath, out DateTime lastTime))
             {
-                foreach (var deviceId in currentDeviceIds)
+                if (DateTime.Now - lastTime < eventCooldown)
                 {
-                    string driveLetter = GetUsbDriveLetter();
-                    string message = $"USB uređaj već spojen u {DateTime.Now} - ID uređaja: {deviceId}";
-
-                    if (!string.IsNullOrEmpty(driveLetter))
-                    {
-                        message += $" - USB: {driveLetter}";
-                        PrintUsbDriveTree(driveLetter); // Ispis strukture direktorija
-                        StartFileSystemWatcher(driveLetter); // Pokreni FileSystemWatcher za USB
-                        StartPcFileSystemWatcher(@"C:\Users\Korisnik\Desktop"); // Pokreni FileSystemWatcher za racunalo
-                    }
-                    else
-                    {
-                        message += " - Slovo USB particije nije pronađeno";
-                    }
-
-                    UsbDeviceConnected?.Invoke(message);
-                    GenerateReport(message); // Dodaj zapis u log datoteku
-                    isDeviceConnected = true;
-                }
-            }
-            else
-            {
-                Console.WriteLine("Trenutno nema spojenih USB uređaja.");
-            }
-        }
-
-        // Dohvaća sve trenutno povezane USB uređaje
-        private List<string> GetAllConnectedUsbDeviceIds()
-        {
-            var deviceIds = new List<string>();
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(
-                "SELECT * FROM Win32_DiskDrive WHERE MediaType='Removable Media'");
-
-            foreach (ManagementObject disk in searcher.Get())
-            {
-                string deviceId = disk["PNPDeviceID"]?.ToString();
-                if (!string.IsNullOrEmpty(deviceId))
-                {
-                    deviceIds.Add(deviceId);
+                    return false; // Ignoriraj događaj jer je preblizu prethodnom
                 }
             }
 
-            return deviceIds;
+            lastEventTimes[filePath] = DateTime.Now; // Ažuriraj vrijeme zadnjeg događaja
+            return true;
         }
 
-        // Funkcija za dohvaćanje jedinstvenog ID-a USB uređaja
-        private string GetUsbDeviceId()
+        public void CleanupOldEvents()
         {
-            string deviceId = null;
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(
-                "SELECT * FROM Win32_DiskDrive WHERE MediaType='Removable Media'");
+            var cutoffTime = DateTime.Now - TimeSpan.FromMinutes(5); // Očisti zapise starije od 5 minuta
+            var oldKeys = lastEventTimes.Where(kvp => kvp.Value < cutoffTime).Select(kvp => kvp.Key).ToList();
 
-            foreach (ManagementObject disk in searcher.Get())
+            foreach (var key in oldKeys)
             {
-                deviceId = disk["PNPDeviceID"]?.ToString();
-                if (!string.IsNullOrEmpty(deviceId))
-                {
-                    break;
-                }
+                lastEventTimes.Remove(key);
             }
-
-            return deviceId;
         }
 
-        // Funkcija za dobivanje slova particije za USB uređaj
-        private string GetUsbDriveLetter()
+        public void PrintUsbDriveTree(string driveLetter)
         {
-            DriveInfo[] drives = DriveInfo.GetDrives();
-            foreach (var drive in drives)
-            {
-                if (drive.DriveType == DriveType.Removable && drive.IsReady)
-                {
-                    return drive.Name; // Vrati slovo usb particije
-                }
-            }
-            return null;
-        }
-
-        // Ispis strukture direktorija USB uređaja
-        private void PrintUsbDriveTree(string driveLetter)
-        {
-            Console.WriteLine($"Struktura direktorija za USB uredaj {driveLetter}:");
+            Console.WriteLine($"Struktura direktorija za USB uređaj {driveLetter}:");
             PrintDirectoryTree(driveLetter, 0);
+            Console.WriteLine("---------------------------");
         }
 
-        // Rekurzivna funkcija za ispis strukture direktorija
         private void PrintDirectoryTree(string path, int indentLevel)
         {
             try
             {
+                // Lista direktorija i fajlova koje želimo ignorirati
+                var ignoreList = new List<string>
+        {
+            "System Volume Information",
+            "FOUND.000",
+            ".Spotlight-V100",
+            ".fseventsd",
+            ".Trashes",
+            ".TemporaryItems",
+            ".DS_Store",
+            "Thumbs.db",
+            "desktop.ini"
+        };
+
                 foreach (var directory in Directory.GetDirectories(path))
                 {
-                    Console.WriteLine(new string(' ', indentLevel) + Path.GetFileName(directory));
+                    string dirName = Path.GetFileName(directory);
+                    if (ignoreList.Contains(dirName))
+                    {
+                        continue; // Ignoriraj nebitne direktorije
+                    }
+
+                    Console.WriteLine(new string(' ', indentLevel) + dirName);
                     PrintDirectoryTree(directory, indentLevel + 2);
                 }
 
                 foreach (var file in Directory.GetFiles(path))
                 {
-                    Console.WriteLine(new string(' ', indentLevel) + Path.GetFileName(file));
+                    string fileName = Path.GetFileName(file);
+                    if (ignoreList.Contains(fileName) || fileName.StartsWith("~$") || fileName.StartsWith("._")) continue; // Ignoriraj nebitne fajlove
+
+                    Console.WriteLine(new string(' ', indentLevel) + fileName);
                 }
             }
             catch (UnauthorizedAccessException)
@@ -325,12 +319,13 @@ namespace UsbDeviceMonitor
             }
         }
 
+
         public void GenerateReport(string message)
         {
             try
             {
                 Console.WriteLine($"Pokušavam spremiti zapis u: {reportFilePath}");
-                File.AppendAllText(reportFilePath, message + Environment.NewLine);
+                File.AppendAllText(reportFilePath, $"{DateTime.Now}: {message}" + Environment.NewLine);
                 Console.WriteLine("Zapis dodan u log datoteku.");
             }
             catch (Exception ex)
